@@ -110,6 +110,12 @@ function switchView(viewId, navEl) {
     breadcrumbEl.innerText = VIEW_TITLES[viewId];
   }
 
+  // Show presets in topbar ONLY on Dashboard view; hide on all other modules
+  const topbarPresets = document.querySelector(".topbar-presets");
+  if (topbarPresets) {
+    topbarPresets.style.display = (viewId === "view-dashboard") ? "flex" : "none";
+  }
+
   // Close mobile sidebar if open
   const sidebar = document.getElementById("app-sidebar");
   if (sidebar && sidebar.classList.contains("open")) {

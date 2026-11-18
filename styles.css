@@ -260,6 +260,12 @@ body {
   align-items: center;
   gap: 0.5rem;
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.topbar-presets::-webkit-scrollbar {
+  display: none;
 }
 
 .preset-chip {
