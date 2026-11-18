@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRUECOST AI — Financial Decision Impact Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js local offline bundle -->
+  <script src="chart.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-badge">₹</div>
+      <div class="brand-text">
+        <h1>TRUECOST AI</h1>
+        <p>Financial Decision Impact Simulator • Hackathon Edition</p>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge-tag">PS11 Challenge</span>
+      <span class="badge-accuracy">✓ Standard EMI Precision &lt; ₹0.01</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Presets Bar -->
+    <div class="presets-bar">
+      <span class="preset-label">⚡ Quick Presets:</span>
+      <button class="preset-btn" onclick="applyPreset('iphone')">📱 iPhone 16 Pro (₹1,34,900 / 12m)</button>
+      <button class="preset-btn" onclick="applyPreset('macbook')">💻 MacBook M3 (₹1,99,900 / 24m)</button>
+      <button class="preset-btn" onclick="applyPreset('ev_bike')">🛵 EV Scooter (₹1,15,000 / 36m)</button>
+      <button class="preset-btn" onclick="applyPreset('personal_loan')">🏥 Emergency Loan (₹3,00,000 / 24m)</button>
+    </div>
+
+    <!-- Main Grid: Controls + Content -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Controls & Simulation Studio -->
+      <aside class="control-panel">
+        <div class="panel-title">
+          <span>⚙️</span> Loan & Purchase Parameters
+        </div>
+
+        <!-- Product Price / Principal -->
+        <div class="form-group">
+          <label>
+            <span>Product Price / Loan Amount</span>
+            <span class="value-preview" id="label-price">₹1,00,000</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">₹</span>
+            <input type="number" id="input-price" class="text-input" value="100000" min="1000" step="5000">
+          </div>
+          <input type="range" id="slider-price" class="range-slider" min="10000" max="1000000" step="5000" value="100000">
+        </div>
+
+        <!-- Tenure in Months -->
+        <div class="form-group">
+          <label>
+            <span>Tenure (Months)</span>
+            <span class="value-preview" id="label-tenure">12 Months</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">📅</span>
+            <input type="number" id="input-tenure" class="text-input" value="12" min="1" max="120">
+          </div>
+          <input type="range" id="slider-tenure" class="range-slider" min="3" max="60" step="1" value="12">
+        </div>
+
+        <!-- Bank Loan Parameters -->
+        <div class="form-group">
+          <label>
+            <span>Bank Interest Rate (% p.a.)</span>
+            <span class="value-preview" id="label-bank-rate">12.0%</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">%</span>
+            <input type="number" id="input-bank-rate" class="text-input" value="12.0" step="0.25">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>Bank Processing Fee (% + 18% GST)</span>
+            <span class="value-preview" id="label-bank-proc">1.5%</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">%</span>
+            <input type="number" id="input-bank-proc" class="text-input" value="1.5" step="0.1">
+          </div>
+        </div>
+
+        <!-- No-Cost EMI Implicit Rate -->
+        <div class="form-group">
+          <label>
+            <span>No-Cost Bank Implicit Rate (% p.a.)</span>
+            <span class="value-preview" id="label-nocost-rate">15.0%</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">%</span>
+            <input type="number" id="input-nocost-rate" class="text-input" value="15.0" step="0.5">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>No-Cost Card Fee (₹ + 18% GST)</span>
+            <span class="value-preview" id="label-nocost-fee">₹199</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">₹</span>
+            <input type="number" id="input-nocost-fee" class="text-input" value="199" step="50">
+          </div>
+        </div>
+
+        <!-- Upfront Parameters -->
+        <div class="form-group">
+          <label>
+            <span>Upfront Cash Discount (%)</span>
+            <span class="value-preview" id="label-upfront-disc">3.0%</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">%</span>
+            <input type="number" id="input-upfront-disc" class="text-input" value="3.0" step="0.5">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>Opportunity Yield / FD Rate (% p.a.)</span>
+            <span class="value-preview" id="label-opp-rate">7.0%</span>
+          </label>
+          <div class="input-with-symbol">
+            <span class="symbol">%</span>
+            <input type="number" id="input-opp-rate" class="text-input" value="7.0" step="0.5">
+          </div>
+        </div>
+
+        <!-- SIMULATION STUDIO (Accordion) -->
+        <div class="sim-accordion">
+          <div class="sim-accordion-header" onclick="toggleAccordion('prepay-body')">
+            <span>⚡ Early Repayment (Prepayment)</span>
+            <span id="prepay-arrow">▼</span>
+          </div>
+          <div class="sim-accordion-body" id="prepay-body">
+            <div class="toggle-row">
+              <span style="font-size:0.8rem; font-weight:600;">Enable Part-Payment</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-prepay" onchange="runSimulation()">
+                <span class="slider-round"></span>
+              </label>
+            </div>
+            <div id="prepay-controls" style="display:none; flex-direction:column; gap:0.75rem;">
+              <div class="form-group">
+                <label>Month of Prepayment</label>
+                <input type="number" id="input-prepay-month" class="text-input no-symbol" value="6" min="1">
+              </div>
+              <div class="form-group">
+                <label>Prepayment Amount (₹)</label>
+                <input type="number" id="input-prepay-amount" class="text-input no-symbol" value="25000" step="5000">
+              </div>
+              <div class="form-group">
+                <label>Repayment Strategy</label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="prepay-action" value="reduce_tenure" checked onchange="runSimulation()">
+                    <span>Reduce Tenure (Save Interest)</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="prepay-action" value="reduce_emi" onchange="runSimulation()">
+                    <span>Reduce EMI (Lower Bill)</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Missed Payment Simulation -->
+        <div class="sim-accordion">
+          <div class="sim-accordion-header" onclick="toggleAccordion('missed-body')">
+            <span>⚠️ Missed Payment & Penalties</span>
+            <span id="missed-arrow">▼</span>
+          </div>
+          <div class="sim-accordion-body" id="missed-body">
+            <div class="toggle-row">
+              <span style="font-size:0.8rem; font-weight:600;">Simulate Default / Skip</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-missed" onchange="runSimulation()">
+                <span class="slider-round"></span>
+              </label>
+            </div>
+            <div id="missed-controls" style="display:none; flex-direction:column; gap:0.75rem;">
+              <div class="form-group">
+                <label>Missed Payment at Month</label>
+                <input type="number" id="input-missed-month" class="text-input no-symbol" value="4" min="1">
+              </div>
+              <div class="form-group">
+                <label>Late Fee Penalty (₹ + 18% GST)</label>
+                <input type="number" id="input-missed-penalty" class="text-input no-symbol" value="500" step="100">
+              </div>
+              <div class="form-group">
+                <label>Penal Overdue Rate (% p.a.)</label>
+                <input type="number" id="input-missed-penal-rate" class="text-input no-symbol" value="24" step="2">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Rate Simulation -->
+        <div class="sim-accordion">
+          <div class="sim-accordion-header" onclick="toggleAccordion('floating-body')">
+            <span>📈 Floating Rate Mid-Loan Shift</span>
+            <span id="floating-arrow">▼</span>
+          </div>
+          <div class="sim-accordion-body" id="floating-body">
+            <div class="toggle-row">
+              <span style="font-size:0.8rem; font-weight:600;">Enable Rate Revision</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-floating" onchange="runSimulation()">
+                <span class="slider-round"></span>
+              </label>
+            </div>
+            <div id="floating-controls" style="display:none; flex-direction:column; gap:0.75rem;">
+              <div class="form-group">
+                <label>Rate Changes at Month</label>
+                <input type="number" id="input-floating-month" class="text-input no-symbol" value="6" min="1">
+              </div>
+              <div class="form-group">
+                <label>New Annual Rate (% p.a.)</label>
+                <input type="number" id="input-floating-rate" class="text-input no-symbol" value="14.0" step="0.5">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Right Column: Results, Comparison, Charts, Table -->
+      <main class="content-area">
+
+        <!-- Recommendation Banner -->
+        <section class="verdict-banner" id="verdict-card">
+          <div class="verdict-header">
+            <div class="verdict-title">
+              <span>🏆</span>
+              <span id="verdict-winner-name">Recommended: Upfront Cash Payment</span>
+            </div>
+            <div class="savings-pill" id="verdict-savings">Save ₹11,389 vs Highest Option</div>
+          </div>
+          <ul class="verdict-points" id="verdict-reasons">
+            <li>Upfront cash payment eliminates bank interest and loan processing charges.</li>
+            <li>No-Cost EMI is not truly 0%: You secretly pay ₹1,400+ in non-refundable 18% GST on monthly interest.</li>
+          </ul>
+        </section>
+
+        <!-- 3 Comparison Cards -->
+        <section class="comparison-cards-grid">
+          
+          <!-- Card 1: Bank Loan -->
+          <div class="scenario-card" id="card-bank">
+            <div class="card-header">
+              <h3 class="card-title">Bank Personal Loan</h3>
+              <p class="card-subtitle" id="bank-subtitle">Standard reducing balance rate</p>
+            </div>
+            <div class="card-hero-metric">
+              <div class="metric-label">Monthly EMI</div>
+              <div class="metric-val-large" id="bank-emi">₹8,885</div>
+              <div class="metric-val-sub" id="bank-tenure-tag">over 12 months</div>
+            </div>
+            <div class="breakdown-list">
+              <div class="breakdown-row">
+                <span>Principal Financed</span>
+                <span class="val" id="bank-principal">₹1,00,000</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Total Interest</span>
+                <span class="val" id="bank-interest">₹6,619</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Processing Fee + GST</span>
+                <span class="val" id="bank-fee">₹1,770</span>
+              </div>
+              <div class="breakdown-row" id="bank-penalty-row">
+                <span>Penalties Incurred</span>
+                <span class="val" id="bank-penalty">₹0</span>
+              </div>
+            </div>
+            <div class="card-footer-metric">
+              <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">True Total Cost</span>
+              <span class="footer-cost" id="bank-total">₹1,08,389</span>
+            </div>
+          </div>
+
+          <!-- Card 2: No-Cost EMI -->
+          <div class="scenario-card" id="card-nocost">
+            <div class="card-header">
+              <h3 class="card-title">"No-Cost" EMI</h3>
+              <p class="card-subtitle">Merchant Discount + Bank Interest</p>
+            </div>
+            <div class="card-hero-metric">
+              <div class="metric-label">Advertised Monthly EMI</div>
+              <div class="metric-val-large" id="nocost-emi">₹8,333</div>
+              <div class="metric-val-sub">Advertised 0% interest</div>
+            </div>
+            <div class="breakdown-list">
+              <div class="breakdown-row">
+                <span>Financed Principal</span>
+                <span class="val" id="nocost-financed">₹92,819</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Upfront Discount</span>
+                <span class="val" style="color:#34d399;" id="nocost-discount">-₹7,181</span>
+              </div>
+              <div class="breakdown-row highlight-trap">
+                <span>⚠️ 18% GST on Interest</span>
+                <span class="val" style="color:#fb7185;" id="nocost-gst">+₹1,293</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Card Fee + GST</span>
+                <span class="val" id="nocost-fee">₹235</span>
+              </div>
+            </div>
+            <div class="card-footer-metric">
+              <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">True Total Cost</span>
+              <span class="footer-cost" id="nocost-total">₹1,01,528</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Upfront Cash -->
+          <div class="scenario-card" id="card-upfront">
+            <div class="winner-ribbon" id="upfront-ribbon">WINNER</div>
+            <div class="card-header">
+              <h3 class="card-title">Upfront Payment</h3>
+              <p class="card-subtitle" id="upfront-subtitle">Immediate cash / debit out-of-pocket</p>
+            </div>
+            <div class="card-hero-metric">
+              <div class="metric-label">One-Time Outflow</div>
+              <div class="metric-val-large" id="upfront-outflow">₹97,000</div>
+              <div class="metric-val-sub">Zero debt obligations</div>
+            </div>
+            <div class="breakdown-list">
+              <div class="breakdown-row">
+                <span>Sticker Price</span>
+                <span class="val" id="upfront-base">₹1,00,000</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Instant Cash Discount</span>
+                <span class="val" style="color:#34d399;" id="upfront-discount">-₹3,000</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Interest & Fees</span>
+                <span class="val">₹0</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Opportunity Cost (Forgone Yield)</span>
+                <span class="val" style="color:#60a5fa;" id="upfront-opp-cost">+₹7,229</span>
+              </div>
+            </div>
+            <div class="card-footer-metric">
+              <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">True Total Outflow</span>
+              <span class="footer-cost" id="upfront-total">₹97,000</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- Charts Grid -->
+        <section class="charts-grid">
+          
+          <!-- Chart 1: Cumulative Outflow Line -->
+          <div class="chart-card">
+            <div class="chart-title">
+              <span>📈 Cumulative Outflow Over Time (₹)</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chartCumulative"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: True Cost Composition Stacked Bar -->
+          <div class="chart-card">
+            <div class="chart-title">
+              <span>📊 True Cost Breakdown by Component</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chartComposition"></canvas>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- Month-by-Month Amortization Schedule Table -->
+        <section class="table-card">
+          <div class="table-header-row">
+            <div>
+              <h3 style="font-size:1.05rem; font-weight:700;">📅 Month-by-Month Amortization Ledger</h3>
+              <p style="font-size:0.75rem; color:var(--text-muted);">Exact penny-accurate repayment schedule computed without third-party libraries</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div class="table-tabs">
+                <button class="tab-btn active" id="tab-bank" onclick="switchTableTab('bank')">Bank Loan</button>
+                <button class="tab-btn" id="tab-nocost" onclick="switchTableTab('nocost')">No-Cost EMI</button>
+                <button class="tab-btn" id="tab-upfront" onclick="switchTableTab('upfront')">Upfront</button>
+              </div>
+              <button class="btn-export" onclick="exportTableToCSV()">
+                <span>📥</span> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table id="amortization-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Opening Bal (₹)</th>
+                  <th>Rate (%)</th>
+                  <th>EMI Billed (₹)</th>
+                  <th>Principal (₹)</th>
+                  <th>Interest (₹)</th>
+                  <th>GST on Int (₹)</th>
+                  <th>Penalty (₹)</th>
+                  <th>Prepay (₹)</th>
+                  <th>Outflow (₹)</th>
+                  <th>Closing Bal (₹)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Formula Inspector for Judges -->
+        <section class="formula-inspector">
+          <div class="formula-header">🔬 Judges' Formula Inspector (Zero-Dependency Mathematical Verification)</div>
+          <div class="formula-box" id="formula-inspection-text">
+            Standard Reducing Balance EMI Formula: E = P × [ r(1+r)^n ] / [ (1+r)^n - 1 ]<br>
+            Monthly Rate (r) = 12.0% / (12 × 100) = 0.010000 | Compounding Factor (1+r)^12 = 1.126825<br>
+            Calculated EMI: ₹8,884.88 (Matches standard banking calculator within ₹0.001)
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+  </div>
+
+  <script src="simulator.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
